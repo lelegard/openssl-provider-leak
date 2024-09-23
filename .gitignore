@@ -1,0 +1,5 @@
+memtest
+*.o
+*.a
+*.log
+*.tmp

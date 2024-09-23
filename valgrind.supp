@@ -1,0 +1,9 @@
+# When loading shared libraries, dlopen() keeps a few memory blocks. Because we never unload
+# shared libraries, this is expected and not significant for the application memory management.
+{
+   Ignore dlopen bug.
+   Memcheck:Leak
+   ...
+   fun:_dl_open
+   ...
+}
