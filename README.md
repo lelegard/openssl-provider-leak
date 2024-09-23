@@ -2,15 +2,21 @@
 
 **Contents:**
 
-* [Context](#context)
-* [OpenSSL 3.0.13, Ubuntu 24.04.1 LTS, x86_64 architecture](#openssl-3013-ubuntu-24041-lts-x8664-architecture)
-* [OpenSSL 3.0.13, Ubuntu 24.04.1 LTS, Arm64 architecture](#openssl-3013-ubuntu-24041-lts-arm64-architecture)
-* [OpenSSL 3.2.2, Fedora 40, Arm64 architecture](#openssl-322-fedora-40-arm64-architecture)
-* [OpenSSL 3.3.2, Ubuntu 24.04.1 LTS, x86_64 architecture](#openssl-332-ubuntu-24041-lts-x8664-architecture)
-* [OpenSSL 3.3.2, macOS 15.0, Arm64 architecture](#openssl-332-macos-150-arm64-architecture)
+* [OpenSSL and resources cleanup](#openssl-and-resources-cleanup)
+  * [The problem](#the-problem)
+  * [Various alternatives](#various-alternatives)
+  * [The solution](#the-solution)
+* [Tests](#tests)
+  * [OpenSSL 3.0.13, Ubuntu 24.04.1 LTS, x86_64 architecture](#openssl-3013-ubuntu-24041-lts-x8664-architecture)
+  * [OpenSSL 3.0.13, Ubuntu 24.04.1 LTS, Arm64 architecture](#openssl-3013-ubuntu-24041-lts-arm64-architecture)
+  * [OpenSSL 3.2.2, Fedora 40, Arm64 architecture](#openssl-322-fedora-40-arm64-architecture)
+  * [OpenSSL 3.3.2, Ubuntu 24.04.1 LTS, x86_64 architecture](#openssl-332-ubuntu-24041-lts-x8664-architecture)
+  * [OpenSSL 3.3.2, macOS 15.0, Arm64 architecture](#openssl-332-macos-150-arm64-architecture)
 * [Rebuilding OpenSSL on Linux](#rebuilding-openssl-on-linux)
 
-## Context
+## OpenSSL and resources cleanup
+
+### The problem
 
 Since version 1.1.0, OpenSSL is supposed to automatically allocate the resources
 it needs, and automatically free them on application termination (through an
@@ -21,8 +27,7 @@ dealing with providers. An OpenSSL provider is loaded using `OSSL_PROVIDER_load(
 and unloaded using `OSSL_PROVIDER_unload()`. At the exit of an application, the
 providers are not automatically unloaded and various memory leaks are observed.
 
-This repository contains a sample program to illustrate the various possibilities
-and mishaps, including memory leaks and segmentation faults.
+### Various alternatives
 
 In a simple application, it is easy to explicitly unload at the end of the program
 the exact list of providers which were loaded. However, when developing a library
@@ -49,13 +54,27 @@ onwards, there is no crash when we try to unload a provider after OpenSSL cleanu
 However, the memory leak is still present and we do not know if the absence
 of crash is dues to a new careful check in OpenSSL or just luck.
 
+### The solution
+
+From the various tests, one solutions emerges as satisfactory: unload the OpenSSL
+providers (call `OSSL_PROVIDER_unload()`) in an exit handler which is registered
+using `OPENSSL_atexit()`, after initializing the first provider.
+
+In this situation, the unload is guaranteed to be executed as part of OpenSSL
+termination, before its final cleanup.
+
+## Tests
+
+This repository contains a sample program to illustrate the various possibilities
+and mishaps, including memory leaks and segmentation faults.
+
 Note: When loading shared libraries, `dlopen()` keeps a few memory blocks. Because
 we never unload shared libraries, this is expected and not significant for the
 application memory management. In the test, these errors are suppressed using a
 valgrind "suppression file". Therefore, any memory leak which is discussed here
 is only due to OpenSSL, not `dlopen()`.
 
-## OpenSSL 3.0.13, Ubuntu 24.04.1 LTS, x86_64 architecture
+### OpenSSL 3.0.13, Ubuntu 24.04.1 LTS, x86_64 architecture
 
 OpenSSL 3.0.13 (CPUINFO: OPENSSL_ia32cap=0x5ffaf3ffffebffff:0x427aa)
 
@@ -73,13 +92,13 @@ Observed behaviour:
 - Call `OPENSSL_cleanup()` at end of `main()`, do not call `OSSL_PROVIDER_unload()`
   - Memory leak (78 blocks)
 
-## OpenSSL 3.0.13, Ubuntu 24.04.1 LTS, Arm64 architecture
+### OpenSSL 3.0.13, Ubuntu 24.04.1 LTS, Arm64 architecture
 
 OpenSSL 3.0.13 (CPUINFO: OPENSSL_armcap=0x3d)
 
 Identical behaviours as x86_64 architecture, same OS and OpenSSL version.
 
-## OpenSSL 3.2.2, Fedora 40, Arm64 architecture
+### OpenSSL 3.2.2, Fedora 40, Arm64 architecture
 
 OpenSSL 3.2.2 (CPUINFO: OPENSSL_armcap=0x8fd)
 
@@ -97,7 +116,7 @@ Observed behaviour:
 - Call `OPENSSL_cleanup()` at end of `main()`, do not call `OSSL_PROVIDER_unload()`
   - Memory leak (96 blocks)
 
-## OpenSSL 3.3.2, Ubuntu 24.04.1 LTS, x86_64 architecture
+### OpenSSL 3.3.2, Ubuntu 24.04.1 LTS, x86_64 architecture
 
 OpenSSL 3.3.2 (CPUINFO: OPENSSL_ia32cap=0x5ffaf3ffffebffff:0x427aa)
 
@@ -117,7 +136,7 @@ Observed behaviour:
 - Call `OPENSSL_cleanup()` at end of `main()`, do not call `OSSL_PROVIDER_unload()`
   - Memory leak (89 blocks)
 
-## OpenSSL 3.3.2, macOS 15.0, Arm64 architecture
+### OpenSSL 3.3.2, macOS 15.0, Arm64 architecture
 
 OpenSSL 3.3.2 (CPUINFO: OPENSSL_armcap=0x987d)
 
