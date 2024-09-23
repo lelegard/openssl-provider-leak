@@ -4,7 +4,13 @@ CFLAGS += -g $(if $(BREW),-I$(BREW)/include)
 LDLIBS += $(if $(BREW),-L$(BREW)/lib) -lcrypto
 
 default: memtest
-test: memtest
-	valgrind --quiet --leak-check=full --show-leak-kinds=all --suppressions=valgrind.supp ./memtest $(PARAM)
+
 clean:
 	rm -rf memtest *.o *.a *.log *.tmp *.dSYM
+
+test: memtest
+ifeq ($(SYSTEM),Darwin)
+	MallocStackLogging=1 leaks --atExit -- ./memtest $(PARAM)
+else
+	valgrind --quiet --leak-check=full --show-leak-kinds=all --suppressions=valgrind.supp ./memtest $(PARAM)
+endif
