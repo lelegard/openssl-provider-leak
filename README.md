@@ -1,5 +1,17 @@
 # OpenSSL providers and resource cleanup
 
+**Contents:**
+
+* [Context](#context)
+* [OpenSSL 3.0.13, Ubuntu 24.04.1 LTS, x86_64 architecture](#openssl-3013-ubuntu-24041-lts-x8664-architecture)
+* [OpenSSL 3.0.13, Ubuntu 24.04.1 LTS, Arm64 architecture](#openssl-3013-ubuntu-24041-lts-arm64-architecture)
+* [OpenSSL 3.2.2, Fedora 40, Arm64 architecture](#openssl-322-fedora-40-arm64-architecture)
+* [OpenSSL 3.3.2, Ubuntu 24.04.1 LTS, x86_64 architecture](#openssl-332-ubuntu-24041-lts-x8664-architecture)
+* [OpenSSL 3.3.2, macOS 15.0, Arm64 architecture](#openssl-332-macos-150-arm64-architecture)
+* [Rebuilding OpenSSL on Linux](#rebuilding-openssl-on-linux)
+
+## Context
+
 Since version 1.1.0, OpenSSL is supposed to automatically allocate the resources
 it needs, and automatically free them on application termination (through an
 `atexit()` handler).
