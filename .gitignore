@@ -1,5 +1,7 @@
 memtest
+.#*
 *.o
 *.a
 *.log
 *.tmp
+*.dSYM

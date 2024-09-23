@@ -38,7 +38,7 @@ application memory management. In the test, these errors are suppressed using a
 valgrind "suppression file". Therefore, any memory leak which is discussed here
 is only due to OpenSSL, not `dlopen()`.
 
-### Configuration 1: Ubuntu 24.04.1 LTS, x86_64 architecture
+### OpenSSL 3.0.13, Ubuntu 24.04.1 LTS, x86_64 architecture
 
 OpenSSL 3.0.13 (CPUINFO: OPENSSL_ia32cap=0x5ffaf3ffffebffff:0x427aa)
 
@@ -55,3 +55,10 @@ Observed behaviour:
   - No memory leak
 - Call `OPENSSL_cleanup()` at end of `main()`, do not call `OSSL_PROVIDER_unload()`
   - Memory leak (78 blocks)
+
+### OpenSSL 3.3.2, macOS 15.0, Arm64 architecture
+
+OpenSSL 3.3.2 (CPUINFO: OPENSSL_armcap=0x987d)
+
+Because of the lack of `valgrind` support on macOS, memory leaks could not be observed.
+However, no crash happened in any of the six tested configurations.
