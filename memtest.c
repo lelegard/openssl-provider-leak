@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    if (param == 1 && legacy != NULL) {
+    if (param == 1) {
         OSSL_PROVIDER_unload(legacy);
         legacy = NULL;
     }

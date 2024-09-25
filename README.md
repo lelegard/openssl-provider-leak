@@ -52,11 +52,11 @@ while OpenSSL is "terminated". We get a memory leak _and_ a crash.
 We have observed that the crash happens only with OpenSSL 3.0. With OpenSSL 3.2
 onwards, there is no crash when we try to unload a provider after OpenSSL cleanup.
 However, the memory leak is still present and we do not know if the absence
-of crash is dues to a new careful check in OpenSSL or just luck.
+of crash is due to a new careful check in OpenSSL or just luck.
 
 ### The solution
 
-From the various tests, one solutions emerges as satisfactory: unload the OpenSSL
+From the various tests, one solution emerges as satisfactory: unload the OpenSSL
 providers (call `OSSL_PROVIDER_unload()`) in an exit handler which is registered
 using `OPENSSL_atexit()`, after initializing the first provider.
 
@@ -156,9 +156,13 @@ Observed behaviour:
 - Call `OPENSSL_cleanup()` at end of `main()`, do not call `OSSL_PROVIDER_unload()`
   - No memory leak
 
-This time, with OpenSSL 3.3.2, it seems that OpenSSL does the cleanup of the
-loaded providers. Interestingly, the memory leaks are observed when we try to
-unload the provider after the OpenSSL cleanup.
+This time, with OpenSSL 3.3.2 as installed using Homebrew on macOS, it seems
+that OpenSSL does the cleanup of the loaded providers. Interestingly, the memory
+leaks are observed when we try to unload the provider after the OpenSSL cleanup.
+
+On Linux, with the same version of OpenSSL 3.3.2, recompiled from sources,
+we observed the memory leaks when the providers are not explicitly unloaded.
+We do not know where this difference comes from.
 
 ## Rebuilding OpenSSL on Linux
 
