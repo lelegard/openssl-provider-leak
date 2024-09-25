@@ -156,13 +156,17 @@ Observed behaviour:
 - Call `OPENSSL_cleanup()` at end of `main()`, do not call `OSSL_PROVIDER_unload()`
   - No memory leak
 
-This time, with OpenSSL 3.3.2 as installed using Homebrew on macOS, it seems
-that OpenSSL does the cleanup of the loaded providers. Interestingly, the memory
-leaks are observed when we try to unload the provider after the OpenSSL cleanup.
+On macOS, the tests were done twice: once with the binary OpenSSL 3.3.2 as installed
+using Homebrew, and once using OpenSSL 3.3.2 as recompiled from sources.
+The results are exactly the same.
 
-On Linux, with the same version of OpenSSL 3.3.2, recompiled from sources,
-we observed the memory leaks when the providers are not explicitly unloaded.
-We do not know where this difference comes from.
+This time, it seems that OpenSSL does the cleanup of the loaded providers.
+Interestingly, the memory leaks are observed when we try to unload the provider
+after the OpenSSL cleanup.
+
+On Linux, with the same version of OpenSSL 3.3.2, we observed the memory leaks
+when the providers are not explicitly unloaded. We do not know where this
+difference comes from.
 
 ## Rebuilding OpenSSL on Linux
 
